@@ -1,0 +1,6 @@
+framework module EEUISDK {
+  umbrella header "EEUISDK-umbrella.h"
+
+  export *
+  module * { export * }
+}

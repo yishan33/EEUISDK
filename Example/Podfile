@@ -1,7 +1,8 @@
 use_frameworks!
 
 target 'EEUISDK_Example' do
-  pod 'EEUISDK', :path => '../'
+    #pod 'EEUISDK', :path => '../'
+  pod 'EEUISDK', '0.1.0'
 
   target 'EEUISDK_Tests' do
     inherit! :search_paths
