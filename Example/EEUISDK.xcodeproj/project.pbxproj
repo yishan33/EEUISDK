@@ -534,7 +534,7 @@
 				GCC_PREFIX_HEADER = "EEUISDK/EEUISDK-Prefix.pch";
 				INFOPLIST_FILE = "EEUISDK/EEUISDK-Info.plist";
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.EEUISDK-Example222";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = Wildcard;
 				WRAPPER_EXTENSION = app;
@@ -552,7 +552,7 @@
 				GCC_PREFIX_HEADER = "EEUISDK/EEUISDK-Prefix.pch";
 				INFOPLIST_FILE = "EEUISDK/EEUISDK-Info.plist";
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.EEUISDK-Example222";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
