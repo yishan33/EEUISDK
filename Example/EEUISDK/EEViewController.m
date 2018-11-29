@@ -25,7 +25,7 @@
 
 - (void)didReceiveMemoryWarning
 {
-    
+    //exxxxxxxxx
     //eetest
     [super didReceiveMemoryWarning];
     
