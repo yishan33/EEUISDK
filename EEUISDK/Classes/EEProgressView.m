@@ -9,8 +9,6 @@
 #import "EEProgressView.h"
 #import "UIView+Gradient.h"
 
-#define EEProgressDuration 1.5
-
 @interface EEProgressView ()
 
 @property (nonatomic, strong) UIView *progressContentView;
@@ -18,11 +16,16 @@
 @property (nonatomic, strong) UIImageView *backView;
 @property (nonatomic, strong) UIImageView *progressMaskView;
 
+@property (nonatomic, strong) UIView *tagView;
 @property (nonatomic, strong) UIImageView *effectAnimationView;
 
+@property (nonatomic, assign) CGFloat animationDuration;
 @property (nonatomic, assign) CGFloat progressValue;
 @property (nonatomic, assign) BOOL isFirstUpdateProgress;
 @property (nonatomic, strong) NSTimer *effectAnimationTimer;
+
+@property (nonatomic, assign) EEprogressTagPosition tagPosition;
+@property (nonatomic, assign) CGSize tagViewSize;
 
 @end
 
@@ -32,7 +35,17 @@
     if (self = [super initWithFrame:frame]) {
         [self configData];
         [self configUI];
+        _contentSize = CGSizeMake(frame.size.width, frame.size.height);
     }
+    return self;
+}
+
+- (instancetype)initWithContentSize:(CGSize)size {
+    if (self = [super initWithFrame:CGRectZero]) {
+        [self configData];
+        [self configUI];
+        _contentSize = size;
+    };
     return self;
 }
 
@@ -40,6 +53,7 @@
     _direction = EEProgressRiseDirectionRight;
     _progressValue = 0.5;
     _isFirstUpdateProgress = YES;
+    _animationDuration = 1.5f;
 }
 
 - (void)dealloc {
@@ -70,7 +84,7 @@
     }
 
     CGFloat progressLength = _direction & EEProgressRiseDirectionHorizontal ? _contentSize.width * _progressValue : _contentSize.height * _progressValue;
-    CGFloat duration = animation ? EEProgressDuration : 0.005;
+    CGFloat duration = animation ? _animationDuration : 0.005;
     
     CGRect progressFrame = CGRectZero;
     if (_direction & EEProgressRiseDirectionHorizontal) {
@@ -85,22 +99,33 @@
     [UIView animateWithDuration:duration
                      animations:^{
                          self.progressMaskView.frame = progressFrame;
-                    
-                         if (self.effectType > EEProgressEffectTypeNone) {
-                             if (_direction & EEProgressRiseDirectionHorizontal) {
-                                 CGFloat leftSpaceing = _direction == EEProgressRiseDirectionRight ? progressLength : _contentSize.width - progressLength;
+                         if (_direction & EEProgressRiseDirectionHorizontal) {
+                             CGFloat leftSpaceing = _direction == EEProgressRiseDirectionRight ? progressLength : _contentSize.width - progressLength;
+                             if (_effectType > EEProgressEffectTypeNone) {
                                  [self.effectAnimationView mas_updateConstraints:^(MASConstraintMaker *make) {
                                      make.centerX.mas_equalTo(self.mas_left).offset(leftSpaceing);
                                  }];
                              }
-                             else if (_direction & EEProgressRiseDirectionVertical) {
-                                 CGFloat tipSpaceing = _direction == EEProgressRiseDirectionDown ? progressLength : _contentSize.height - progressLength;
-                                 [self.effectAnimationView mas_updateConstraints:^(MASConstraintMaker *make) {
-                                     make.centerY.mas_equalTo(self.mas_top).offset(tipSpaceing);
+                             if (_tagPosition > EEprogressTagPositionNone) {
+                                 [self.tagView mas_updateConstraints:^(MASConstraintMaker *make) {
+                                     make.centerX.mas_equalTo(self.mas_left).offset(leftSpaceing);
                                  }];
                              }
-                             [self layoutIfNeeded];
                          }
+                         else if (_direction & EEProgressRiseDirectionVertical) {
+                             CGFloat topSpaceing = _direction == EEProgressRiseDirectionDown ? progressLength : _contentSize.height - progressLength;
+                             if (_effectType > EEProgressEffectTypeNone) {
+                                 [self.effectAnimationView mas_updateConstraints:^(MASConstraintMaker *make) {
+                                     make.centerY.mas_equalTo(self.mas_top).offset(topSpaceing);
+                                 }];
+                             }
+                             if (_tagPosition > EEprogressTagPositionNone) {
+                                 [self.tagView mas_updateConstraints:^(MASConstraintMaker *make) {
+                                     make.centerY.mas_equalTo(self.mas_top).offset(topSpaceing);
+                                 }];
+                             }
+                         }
+                         [self layoutIfNeeded];
                      }];
 }
 
@@ -119,7 +144,7 @@
             _effectAnimationTimer = nil;
         }
         
-        _effectAnimationTimer = [NSTimer scheduledTimerWithTimeInterval:EEProgressDuration target:self selector:@selector(_hideEffectView) userInfo:nil repeats:YES];
+        _effectAnimationTimer = [NSTimer scheduledTimerWithTimeInterval:_animationDuration target:self selector:@selector(_hideEffectView) userInfo:nil repeats:YES];
     }
 }
 
@@ -136,8 +161,9 @@
     _effectAnimationTimer = nil;
 }
 
-- (void)setProgressValue:(CGFloat)progressValue animation:(BOOL)animation {
+- (void)setProgressValue:(CGFloat)progressValue animation:(BOOL)animation duration:(CGFloat)duration {
     _progressValue = progressValue;
+    _animationDuration = duration;
     if (_progressValue > 1.0) {
         _progressValue = 1.0;
     }
@@ -174,6 +200,39 @@
 
 - (void)setContentSize:(CGSize)contentSize {
     _contentSize = contentSize;
+}
+
+- (void)setTagPosition:(EEprogressTagPosition)tagPosition size:(CGSize)size {
+    _tagPosition = tagPosition;
+    _tagViewSize = size;
+    if (_tagPosition == EEprogressTagPositionUp) {
+        [self.tagView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.centerX.mas_equalTo(self.mas_left).offset(0);
+            make.bottom.mas_equalTo(self.mas_top);
+            make.size.mas_equalTo(size);
+        }];
+    }
+    else if (_tagPosition == EEprogressTagPositionDown) {
+        [self.tagView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.centerX.mas_equalTo(self.mas_left).offset(0);
+            make.top.mas_equalTo(self.mas_bottom);
+            make.size.mas_equalTo(size);
+        }];
+    }
+    else if (_tagPosition == EEprogressTagPositionLeft) {
+        [self.tagView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.centerY.mas_equalTo(self.mas_top).offset(0);
+            make.right.mas_equalTo(self.mas_left);
+            make.size.mas_equalTo(size);
+        }];
+    }
+    else if (_tagPosition == EEprogressTagPositionDown) {
+        [self.tagView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.centerY.mas_equalTo(self.mas_top).offset(0);
+            make.left.mas_equalTo(self.mas_right);
+            make.size.mas_equalTo(size);
+        }];
+    }
 }
 
 - (void)setEffectViewSize:(CGSize)effectViewSize {
@@ -233,6 +292,14 @@
                 make.size.mas_equalTo(CGSizeZero);
             }];
         }
+        
+        //交换前后背景色
+        if (direction == EEProgressRiseDirectionLeft ||
+            direction == EEProgressRiseDirectionUp) {
+            UIColor *tempColor = self.frontView.backgroundColor;
+            self.frontView.backgroundColor = self.backView.backgroundColor;
+            self.backView.backgroundColor = tempColor;
+        }
     }
 }
 
@@ -245,6 +312,7 @@
     
     [self addSubview:self.progressContentView];
     [self addSubview:self.effectAnimationView];
+    [self addSubview:self.tagView];
     
     [self.progressContentView addSubview:self.backView];
     [self.progressContentView addSubview:self.frontView];
@@ -266,6 +334,12 @@
     [self.effectAnimationView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerX.mas_equalTo(self.mas_left).offset(0);
         make.centerY.equalTo(self);
+        make.size.mas_equalTo(CGSizeZero);
+    }];
+    
+    [self.tagView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.mas_equalTo(self.mas_left).offset(0);
+        make.bottom.mas_equalTo(self.mas_top);
         make.size.mas_equalTo(CGSizeZero);
     }];
     
@@ -298,6 +372,13 @@
         _backView.clipsToBounds = YES;
     }
     return _backView;
+}
+
+- (UIView *)tagView {
+    if (!_tagView) {
+        _tagView = [[UIView alloc] init];
+    }
+    return _tagView;
 }
 
 - (UIImageView *)effectAnimationView {
