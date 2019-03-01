@@ -8,6 +8,7 @@
 
 #import "EEProgressView.h"
 #import "UIView+Gradient.h"
+#import "Masonry.h"
 
 @interface EEProgressView ()
 
